@@ -4,6 +4,7 @@
 #include <stdlib.h>
 
 node_t* bt_insert(node_t*, node_t*, node_t*);
+node_t* bt_find(node_t*, const key_t);
 void bt_delete(node_t*);
 
 node_t* rbtree_root(node_t*);
@@ -60,7 +61,7 @@ node_t *rbtree_insert(rbtree *t, const key_t key) {
 }
 
 node_t *rbtree_find(const rbtree *t, const key_t key) {
-  return t->root;
+  return bt_find(t->root, key);
 }
 
 node_t *rbtree_min(const rbtree *t) {
@@ -124,10 +125,20 @@ node_t* bt_insert(node_t* parent, node_t* node, node_t* new_node) {
   return node;
 }
 
-void bt_delete(node_t* node) {
-  if (node == NULL) {
-    return;
+node_t* bt_find(node_t* node, const key_t key) {
+  if (node == NULL) return NULL;
+
+  if (node->key == key) {
+    return node;
+  } else if (node->key <= key) {
+    return bt_find(node->right, key);
+  } else {
+    return bt_find(node->left, key);
   }
+}
+
+void bt_delete(node_t* node) {
+  if (node == NULL) return;
 
   bt_delete(node->left);
   bt_delete(node->right);
