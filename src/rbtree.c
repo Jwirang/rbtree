@@ -1,8 +1,12 @@
 #include "rbtree.h"
 
+#include <stdio.h>
 #include <stdlib.h>
 
 node_t* bt_insert(node_t*, node_t*, node_t*);
+void bt_delete(node_t*);
+
+node_t* rbtree_root(node_t*);
 node_t* rbtree_grapnd_parent(node_t*);
 node_t* rbtree_uncle(node_t*);
 node_t* rbtree_sibling(node_t*);
@@ -31,11 +35,12 @@ rbtree *new_rbtree(void) {
   p->root = NULL;
   p->nil = NULL;
   
-  return p;
+  return p; 
 }
 
 void delete_rbtree(rbtree *t) {
-  // TODO: reclaim the tree nodes's memory
+  bt_delete(t->root);
+
   free(t);
 }
 
@@ -49,11 +54,12 @@ node_t *rbtree_insert(rbtree *t, const key_t key) {
 
   rbtree_insert1(node);
 
-  return t->root;
+  t->root = rbtree_root(node);
+
+  return node;
 }
 
 node_t *rbtree_find(const rbtree *t, const key_t key) {
-  // TODO: implement find
   return t->root;
 }
 
@@ -68,7 +74,33 @@ node_t *rbtree_max(const rbtree *t) {
 }
 
 int rbtree_erase(rbtree *t, node_t *p) {
-  delete_one_child(p);
+  if (p->left == NULL && p->right == NULL) {
+    if (t->root == p) {
+      t->root = NULL;
+    }
+
+    free(p);
+  } else if (p->left == NULL && p->right != NULL) {
+    if (t->root == p) {
+      t->root = p->right;
+    } else {
+      rbtree_replace(p, p->right);
+      p->right->color = RBTREE_BLACK;
+    }
+
+    free(p);
+  } else if (p->left != NULL && p->right == NULL) {
+    if (t->root == p) {
+      t->root = p->right;
+    } else {
+      rbtree_replace(p, p->left);
+      p->left->color = RBTREE_BLACK;
+    }
+
+    free(p);
+  } else {
+    delete_one_child(p);
+  }
   return 0;
 }
 
@@ -83,13 +115,33 @@ node_t* bt_insert(node_t* parent, node_t* node, node_t* new_node) {
     return new_node;
   }
 
-  if (node->key < new_node->key) {
+  if (node->key <= new_node->key) {
     node->right = bt_insert(node, node->right, new_node);
   } else {
     node->left = bt_insert(node, node->left, new_node);
   }
 
   return node;
+}
+
+void bt_delete(node_t* node) {
+  if (node == NULL) {
+    return;
+  }
+
+  bt_delete(node->left);
+  bt_delete(node->right);
+  free(node);
+}
+
+node_t* rbtree_root(node_t* node) {
+  if (node == NULL) return NULL;
+
+  if (node->parent != NULL) {
+    return rbtree_root(node->parent);
+  } else {
+    return node;
+  }
 }
 
 node_t* rbtree_grapnd_parent(node_t* node) {
@@ -220,6 +272,8 @@ void rotate_right(node_t* node) {
 }
 
 int rbtree_is_leaf(node_t* node) {
+  if (node == NULL) return 1;
+  
   return (node->left == NULL && node->right == NULL);
 }
 
@@ -234,7 +288,7 @@ void rbtree_replace(node_t* node, node_t* child) {
 
 void delete_one_child(node_t* node) {
   node_t* child = rbtree_is_leaf(node->right) ? node->left : node->right;
-
+  
   rbtree_replace(node, child);
   if (node->color == RBTREE_BLACK) {
     if (child->color == RBTREE_RED) {
@@ -258,7 +312,7 @@ void rbtree_delete2(node_t* node) {
 
   if (sibling->color == RBTREE_RED) {
     node->parent->color = RBTREE_RED;
-    sibling = RBTREE_RED;
+    sibling->color = RBTREE_BLACK;
     if (node == node->parent->left) {
       rotate_left(node->parent);
     } else {
