@@ -5,6 +5,8 @@
 
 node_t* bt_insert(node_t*, node_t*, node_t*);
 node_t* bt_find(node_t*, const key_t);
+node_t* bt_max(node_t*);
+node_t* bt_min(node_t*);
 void bt_delete(node_t*);
 
 node_t* rbtree_root(node_t*);
@@ -66,12 +68,12 @@ node_t *rbtree_find(const rbtree *t, const key_t key) {
 
 node_t *rbtree_min(const rbtree *t) {
   // TODO: implement find
-  return t->root;
+  return bt_min(t->root);
 }
 
 node_t *rbtree_max(const rbtree *t) {
   // TODO: implement find
-  return t->root;
+  return bt_max(t->root);
 }
 
 int rbtree_erase(rbtree *t, node_t *p) {
@@ -134,6 +136,26 @@ node_t* bt_find(node_t* node, const key_t key) {
     return bt_find(node->right, key);
   } else {
     return bt_find(node->left, key);
+  }
+}
+
+node_t* bt_max(node_t* node) {
+  if (node == NULL) return NULL;
+
+  if(node->right == NULL) {
+    return node;
+  } else {
+    return bt_max(node->right);
+  }
+}
+
+node_t* bt_min(node_t* node) {
+  if (node == NULL) return NULL;
+
+  if(node->left == NULL) {
+    return node;
+  } else {
+    return bt_min(node->left);
   }
 }
 
