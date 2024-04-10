@@ -7,6 +7,7 @@ node_t* bt_find(node_t*, const key_t);
 node_t* bt_max(node_t*);
 node_t* bt_min(node_t*);
 void bt_delete(node_t*);
+void bt_array_inorder(node_t*, key_t*, int*, const size_t);
 
 node_t* rbtree_grand_parent(node_t*);
 node_t* rbtree_uncle(node_t*);
@@ -103,8 +104,22 @@ int rbtree_erase(rbtree *t, node_t *p) {
 }
 
 int rbtree_to_array(const rbtree *t, key_t *arr, const size_t n) {
-  // TODO: implement to_array
-  return 0;
+  int count = 0;
+  bt_array_inorder(t->root, arr, &count, n);
+  return count;
+}
+
+void bt_array_inorder(node_t* node, key_t* arr, int* count, const size_t n) {
+  if (node == NULL || *count >= n) return;
+
+  bt_array_inorder(node->left, arr, count, n);
+
+  if (*count < n) {
+    arr[*count] = node->key;
+    (*count)++;
+  }
+
+  bt_array_inorder(node->right, arr, count, n);
 }
 
 node_t* bt_insert(node_t* parent, node_t* node, node_t* new_node) {
@@ -241,6 +256,7 @@ void rbtree_insert5(rbtree* tree, node_t* node) {
 
   node->parent->color = RBTREE_BLACK;
   grand_parent->color = RBTREE_RED;
+
   if (node == node->parent->left) {
     rotate_right(tree, grand_parent);
   } else {
@@ -254,18 +270,18 @@ void rotate_left(rbtree* tree, node_t* node) {
 
     node->right = child->left;
     if (child->left != NULL) {
-        child->left->parent = node;
+      child->left->parent = node;
     }
 
     child->parent = parent;
     if (parent != NULL) {
-        if (parent->left == node) {
-            parent->left = child;
-        } else {
-            parent->right = child;
-        }
+      if (parent->left == node) {
+        parent->left = child;
+      } else {
+        parent->right = child;
+      }
     } else {
-        tree->root = child;
+      tree->root = child;
     }
 
     child->left = node;
@@ -278,18 +294,18 @@ void rotate_right(rbtree* tree, node_t* node) {
 
     node->left = child->right;
     if (child->right != NULL) {
-        child->right->parent = node;
+      child->right->parent = node;
     }
 
     child->parent = parent;
     if (parent != NULL) {
-        if (parent->right == node) {
-            parent->right = child;
-        } else {
-            parent->left = child;
-        }
+      if (parent->right == node) {
+        parent->right = child;
+      } else {
+        parent->left = child;
+      }
     } else {
-        tree->root = child;
+      tree->root = child;
     }
 
     child->right = node;
