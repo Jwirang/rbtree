@@ -152,11 +152,11 @@ node_t* bt_find(node_t* node, const key_t key) {
 node_t* bt_max(node_t* node) {
   if (node == NULL) return NULL;
 
-  while(node->right != NULL) {
-    node = node->right;
+  if(node->right == NULL) {
+    return node;
+  } else {
+    return bt_max(node->right);
   }
-  
-  return node;
 }
 
 node_t* bt_min(node_t* node) {
